@@ -6,7 +6,7 @@ export function GitWorktreeSettings() {
   const { autoCommitGitWorktree, setAutoCommitGitWorktree } = useSettingsStore();
 
   return (
-    <Card className="max-w-3xl my-6">
+    <Card className="max-w-3xl my-6 hidden">
       <CardHeader>
         <CardTitle>Git Worktree</CardTitle>
         <CardDescription>
@@ -40,7 +40,7 @@ export function SimpleGitWorktreeSettings() {
   const { autoCommitGitWorktree, setAutoCommitGitWorktree } = useSettingsStore();
 
   return (
-    <div className="flex items-start justify-between gap-4 rounded-md border p-4">
+    <div className="hidden flex items-start justify-between gap-4 rounded-md border p-4">
       <div>
         <p className="text-sm font-medium">Auto-commit to worktrees</p>
         <p className="text-xs text-muted-foreground">
@@ -55,4 +55,3 @@ export function SimpleGitWorktreeSettings() {
     </div>
   );
 }
-

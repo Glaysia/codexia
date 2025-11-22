@@ -182,11 +182,17 @@ pub fn run() {
                 config.minimize_app = true;
                 // Bind to localhost only and surface the loopback alias you want to use.
                 config.allowed_origin = Some("localhost".to_string());
+                config.external_host = Some("localhost".to_string());
                 config.port = Some(7420);
                 if let Err(err) = remote::start_remote_ui(app_for_remote, remote_state, config).await {
                     warn!("Failed to auto-start remote UI: {err}");
                 }
             });
+
+            // Hide native window; primary access is via remote UI (localhost).
+            if let Some(main_window) = _app.get_webview_window("main") {
+                let _ = main_window.hide();
+            }
 
             Ok(())
         })

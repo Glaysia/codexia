@@ -3,7 +3,7 @@
 Lightweight Tauri/React UI that wraps Codex CLI locally. No hosted services, no extra login. Remote UI auto-starts on loopback so you can open it in a browser or embed it in a PySide6 webview.
 
 ## Defaults
-- Remote UI binds to `127.0.0.1:7420` and advertises `http://127.57.47.47:7420` (use this in PySide6).
+- Remote UI binds to `http://localhost:7420` on loopback only.
 - Native window stays minimized; use the webview instead.
 - Only Codex CLI features are expected (chat/turns, file ops, apply/exec approvals). Auxiliary modules like analytics, MCP, multi-provider auth are out of scope.
 
@@ -24,7 +24,7 @@ bun run build
 bun tauri dev
 ```
 
-Then open `http://127.57.47.47:7420` in your browser or point your PySide6 `QWebEngineView` at that URL.
+Then open `http://localhost:7420` in your browser or point your PySide6 `QWebEngineView` at that URL.
 
 ## Usage
 - Chat/turns run through your local Codex CLI.

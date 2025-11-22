@@ -18,9 +18,9 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      // Defaults: dark mode with pink accent
-      theme: 'dark',
-      accent: 'pink',
+      // Defaults: light mode with blue accent
+      theme: 'light',
+      accent: 'blue',
       setTheme: (theme: Theme) => set({ theme }),
       toggleTheme: () => set({ theme: get().theme === 'dark' ? 'light' : 'dark' }),
       setAccent: (accent: Accent) => set({ accent }),
