@@ -15,6 +15,7 @@ use commands::{
     check_codex_version, check_coder_version, create_new_window, disable_remote_ui, enable_remote_ui,
     get_remote_ui_status,
 };
+use commands::RemoteUiConfigPayload;
 use filesystem::{
     directory_ops::{canonicalize_path, get_default_directories, read_directory, search_files},
     file_analysis::calculate_file_tokens,
@@ -42,9 +43,10 @@ use session_files::{
 };
 use sleep::{allow_sleep, prevent_sleep, SleepState};
 use crate::state::{AppState, RemoteAccessState};
+use crate::services::remote;
 use tauri::{AppHandle, Emitter, Manager};
 use terminal::open_terminal_with_command;
-use log::error;
+use log::{error, warn};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -164,6 +166,25 @@ pub fn run() {
                 let state = app_handle.state::<AppState>();
                 if let Err(err) = state::get_client(&state, &app_handle).await {
                     error!("Failed to prewarm Codex client: {err}");
+                }
+            });
+
+            // Auto-start Remote UI so browser clients can connect immediately after launch.
+            let auto_remote_app_handle = _app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                // Clone to avoid move-after-borrow in async block.
+                let app_handle = auto_remote_app_handle.clone();
+                let remote_state = app_handle.state::<RemoteAccessState>();
+                let app_for_remote = app_handle.clone();
+                let mut config = RemoteUiConfigPayload::default();
+                // Honor "keep native UI" off by default for auto-start: hide native window.
+                config.application_ui = false;
+                config.minimize_app = true;
+                // Bind to localhost only and surface the loopback alias you want to use.
+                config.allowed_origin = Some("localhost".to_string());
+                config.port = Some(7420);
+                if let Err(err) = remote::start_remote_ui(app_for_remote, remote_state, config).await {
+                    warn!("Failed to auto-start remote UI: {err}");
                 }
             });
 
