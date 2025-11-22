@@ -51,7 +51,7 @@ export function ChatCompose({
         <span className="flex items-center gap-2">
           <Button
             onClick={handleToggleReviewMode}
-            className={showReview ? "bg-accent" : ""}
+            className={`hidden ${showReview ? "bg-accent" : ""}`}
             title="Toggle Review Mode"
           >
             Reivew

@@ -55,7 +55,7 @@ export function Introduce() {
               </Button>
               <Link
                 to="/login"
-                className="flex hover:text-primary items-center justify-end"
+                className="hidden flex hover:text-primary items-center justify-end"
               >
                 <Button>
                   Codexia login
@@ -99,8 +99,8 @@ export function Introduce() {
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="item-3">
-        <AccordionTrigger>Keep in touch and community</AccordionTrigger>
-        <AccordionContent className="flex gap-2 text-balance">
+        <AccordionTrigger className="hidden">Keep in touch and community</AccordionTrigger>
+        <AccordionContent className="hidden flex gap-2 text-balance">
           <Button
             onClick={() =>
               open("https://github.com/milisp/codexia/discussions")

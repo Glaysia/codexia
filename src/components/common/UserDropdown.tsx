@@ -60,7 +60,7 @@ export function UserDropdown() {
       ) : (
         <Link
           to="/login"
-          className="flex hover:text-primary items-center gap-1 px-2"
+          className="hidden flex hover:text-primary items-center gap-1 px-2"
         >
           {t("header.login")}
         </Link>

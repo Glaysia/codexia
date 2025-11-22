@@ -86,7 +86,7 @@ export function PublishCloudDialog() {
       }}
     >
       <DialogTrigger asChild>
-        <Cloud />
+        <Cloud className="hidden" />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={connect}>

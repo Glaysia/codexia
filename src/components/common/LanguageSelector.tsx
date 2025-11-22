@@ -21,7 +21,7 @@ export function LanguageSelector() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-6 px-2 text-xs uppercase"
+          className="hidden h-6 px-2 text-xs uppercase"
           title={t("header.changeLanguage")}
           aria-label={t("header.changeLanguage")}
         >

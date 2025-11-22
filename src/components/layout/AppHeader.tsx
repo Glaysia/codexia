@@ -109,7 +109,7 @@ export function AppHeader() {
               <Button
                 variant="ghost"
                 onClick={handleNewWindow}
-                className="h-6 w-6 justify-start"
+                className="hidden h-6 w-6 justify-start"
                 title={t("header.openNewWindow")}
               >
                 <ExternalLink />
