@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc};
 use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use regex::Regex;
 use serde_json::Value;
 use std::fs::File;
@@ -44,7 +44,8 @@ pub fn parse_filename_metadata(file_name: &str) -> Result<(DateTime<Utc>, String
         r"(?P<date>\d{4}-\d{2}-\d{2})T(?P<hour>\d{2})-(?P<min>\d{2})-(?P<sec>\d{2})-.*?(?P<uuid>[0-9a-fA-F\-]{36})"
     ).unwrap();
 
-    let caps = re.captures(file_name)
+    let caps = re
+        .captures(file_name)
         .ok_or_else(|| format!("Invalid filename: {}", file_name))?;
 
     let ts = format!(

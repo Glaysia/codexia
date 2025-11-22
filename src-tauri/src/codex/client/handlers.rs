@@ -3,24 +3,18 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use codex_app_server_protocol::{
-    ApplyPatchApprovalParams,
-    CommandExecutionRequestApprovalParams,
-    ExecCommandApprovalParams,
-    FileChangeRequestApprovalParams,
-    JSONRPCErrorError,
-    JSONRPCNotification,
-    JSONRPCRequest,
-    RequestId,
-    ServerNotification,
-    ServerRequest,
+    ApplyPatchApprovalParams, CommandExecutionRequestApprovalParams, ExecCommandApprovalParams,
+    FileChangeRequestApprovalParams, JSONRPCErrorError, JSONRPCNotification, JSONRPCRequest,
+    RequestId, ServerNotification, ServerRequest,
 };
 use log::{debug, error, info, warn};
 use serde::Serialize;
 use serde_json::Value;
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 use tokio::process::ChildStdin;
 use tokio::sync::Mutex;
 
+use crate::utils::events::emit_to_app_and_remote;
 use codex_protocol::ConversationId;
 
 use super::transport::send_error;
@@ -55,27 +49,21 @@ pub(super) async fn handle_notification(notification: JSONRPCNotification, app: 
             method: notification.method,
             params: notification.params,
         };
-        if let Err(err) = app.emit("codex:event", payload) {
-            error!("Failed to emit codex:event: {err}");
-        }
+        emit_to_app_and_remote(app, "codex:event", payload).await;
         return;
     }
 
     match ServerNotification::try_from(notification.clone()) {
         Ok(ServerNotification::AuthStatusChange(params)) => {
             info!("Auth status change notification: mode={:?}", params);
-            if let Err(err) = app.emit("codex:auth-status", params) {
-                error!("Failed to emit codex:auth-status: {err}");
-            }
+            emit_to_app_and_remote(app, "codex:auth-status", params).await;
         }
         Ok(ServerNotification::LoginChatGptComplete(params)) => {
             info!(
                 "Login completed notification: success={} id={}",
                 params.success, params.login_id
             );
-            if let Err(err) = app.emit("codex:login-complete", params) {
-                error!("Failed to emit codex:login-complete: {err}");
-            }
+            emit_to_app_and_remote(app, "codex:login-complete", params).await;
         }
         Ok(_) => {
             debug!(
@@ -138,9 +126,7 @@ fn parse_conversation_id(thread_id: &str) -> ConversationId {
     match ConversationId::from_string(thread_id) {
         Ok(id) => id,
         Err(err) => {
-            warn!(
-                "Failed to parse conversation id from thread id {thread_id}: {err}"
-            );
+            warn!("Failed to parse conversation id from thread id {thread_id}: {err}");
             ConversationId::default()
         }
     }
@@ -167,7 +153,9 @@ fn convert_command_execution_request(
     }
 }
 
-fn convert_file_change_request(params: FileChangeRequestApprovalParams) -> ApplyPatchApprovalParams {
+fn convert_file_change_request(
+    params: FileChangeRequestApprovalParams,
+) -> ApplyPatchApprovalParams {
     let FileChangeRequestApprovalParams {
         thread_id,
         item_id,
@@ -217,9 +205,7 @@ async fn process_exec_command_request(
         request_token: token.clone(),
         params: params.clone(),
     };
-    if let Err(err) = app.emit("codex:exec-command-request", payload) {
-        error!("Failed to emit exec command request: {err}");
-    }
+    emit_to_app_and_remote(app, "codex:exec-command-request", payload).await;
 }
 
 async fn process_apply_patch_request(
@@ -256,7 +242,5 @@ async fn process_apply_patch_request(
         request_token: token.clone(),
         params: params.clone(),
     };
-    if let Err(err) = app.emit("codex:apply-patch-request", payload) {
-        error!("Failed to emit apply patch request: {err}");
-    }
+    emit_to_app_and_remote(app, "codex:apply-patch-request", payload).await;
 }

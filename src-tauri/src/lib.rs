@@ -11,11 +11,13 @@ mod state;
 mod terminal;
 mod utils;
 
-use commands::{
-    check_codex_version, check_coder_version, create_new_window, disable_remote_ui, enable_remote_ui,
-    get_remote_ui_status,
-};
+use crate::services::remote;
+use crate::state::{AppState, RemoteAccessState};
 use commands::RemoteUiConfigPayload;
+use commands::{
+    check_coder_version, check_codex_version, create_new_window, disable_remote_ui,
+    enable_remote_ui, get_remote_ui_status,
+};
 use filesystem::{
     directory_ops::{canonicalize_path, get_default_directories, read_directory, search_files},
     file_analysis::calculate_file_tokens,
@@ -24,17 +26,18 @@ use filesystem::{
     git_diff::get_git_file_diff,
     git_status::get_git_status,
     git_worktree::{
+        apply_reverse_patch, commit_changes_to_worktree, delete_git_worktree, git_commit_changes,
         prepare_git_worktree,
-        git_commit_changes,
-        apply_reverse_patch,
-        commit_changes_to_worktree,
-        delete_git_worktree,
     },
     watch::{start_watch_directory, stop_watch_directory},
 };
+use log::{error, warn};
 use mcp::{add_mcp_server, delete_mcp_server, read_mcp_servers, set_mcp_server_enabled};
 use session_files::{
-    cache::{load_project_sessions, write_project_cache, update_project_favorites, remove_project_session},
+    cache::{
+        load_project_sessions, remove_project_session, update_project_favorites,
+        write_project_cache,
+    },
     delete::{delete_session_file, delete_sessions_files},
     get::{get_session_files, read_session_file},
     scanner::scan_projects,
@@ -42,11 +45,8 @@ use session_files::{
     usage::read_token_usage,
 };
 use sleep::{allow_sleep, prevent_sleep, SleepState};
-use crate::state::{AppState, RemoteAccessState};
-use crate::services::remote;
 use tauri::{AppHandle, Emitter, Manager};
 use terminal::open_terminal_with_command;
-use log::{error, warn};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -184,7 +184,9 @@ pub fn run() {
                 config.allowed_origin = Some("localhost".to_string());
                 config.external_host = Some("localhost".to_string());
                 config.port = Some(7420);
-                if let Err(err) = remote::start_remote_ui(app_for_remote, remote_state, config).await {
+                if let Err(err) =
+                    remote::start_remote_ui(app_for_remote, remote_state, config).await
+                {
                     warn!("Failed to auto-start remote UI: {err}");
                 }
             });

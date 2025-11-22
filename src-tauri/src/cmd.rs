@@ -1,29 +1,16 @@
 use codex_app_server_protocol::{
-    AddConversationListenerParams,
-    AddConversationSubscriptionResponse,
-    InterruptConversationParams,
-    InterruptConversationResponse,
-    LoginAccountParams,
-    LoginAccountResponse,
-    LogoutAccountResponse,
-    NewConversationParams,
-    NewConversationResponse,
-    RemoveConversationListenerParams,
-    ResumeConversationParams,
-    ResumeConversationResponse,
-    SendUserMessageParams,
-    SendUserMessageResponse,
-    TurnStartParams,
-    TurnStartResponse,
-    CancelLoginAccountResponse,
-    GetAccountResponse,
-    GetAccountRateLimitsResponse,
+    AddConversationListenerParams, AddConversationSubscriptionResponse, CancelLoginAccountResponse,
+    GetAccountRateLimitsResponse, GetAccountResponse, InterruptConversationParams,
+    InterruptConversationResponse, LoginAccountParams, LoginAccountResponse, LogoutAccountResponse,
+    NewConversationParams, NewConversationResponse, RemoveConversationListenerParams,
+    ResumeConversationParams, ResumeConversationResponse, SendUserMessageParams,
+    SendUserMessageResponse, TurnStartParams, TurnStartResponse,
 };
 use codex_protocol::protocol::ReviewDecision;
 use log::{error, info, warn};
 use tauri::{AppHandle, State};
 
-use crate::state::{AppState, get_client};
+use crate::state::{get_client, AppState};
 
 #[tauri::command]
 pub async fn new_conversation(
@@ -36,10 +23,7 @@ pub async fn new_conversation(
     let client = get_client(&state, &app_handle).await?;
     match client.new_conversation(params, overrides).await {
         Ok(conversation) => {
-            info!(
-                "New conversation created: {}",
-                conversation.conversation_id
-            );
+            info!("New conversation created: {}", conversation.conversation_id);
             Ok(conversation)
         }
         Err(err) => {
@@ -66,9 +50,11 @@ pub async fn remove_conversation_listener(
     app_handle: AppHandle,
 ) -> Result<(), String> {
     let client = get_client(&state, &app_handle).await?;
-    client.remove_conversation_listener(params).await.map(|_| ())
+    client
+        .remove_conversation_listener(params)
+        .await
+        .map(|_| ())
 }
-
 
 #[tauri::command]
 pub async fn send_user_message(
@@ -197,9 +183,7 @@ pub async fn resume_conversation(
     info!("Resuming conversation from {:?} ", path);
     let client = get_client(&state, &app_handle).await?;
     match client.resume_conversation(params, overrides).await {
-        Ok(conversation) => {
-            Ok(conversation)
-        }
+        Ok(conversation) => Ok(conversation),
         Err(err) => {
             error!("Failed to resume conversation from {:?}: {err}", path);
             Err(err)
@@ -214,9 +198,7 @@ pub async fn get_account(
     refresh_token: Option<bool>,
 ) -> Result<GetAccountResponse, String> {
     let client = get_client(&state, &app_handle).await?;
-    client
-        .get_account(refresh_token.unwrap_or(false))
-        .await
+    client.get_account(refresh_token.unwrap_or(false)).await
 }
 
 #[tauri::command]
@@ -234,9 +216,7 @@ pub async fn login_account_chatgpt(
     app_handle: AppHandle,
 ) -> Result<LoginAccountResponse, String> {
     let client = get_client(&state, &app_handle).await?;
-    client
-        .login_account(LoginAccountParams::Chatgpt)
-        .await
+    client.login_account(LoginAccountParams::Chatgpt).await
 }
 
 #[tauri::command]

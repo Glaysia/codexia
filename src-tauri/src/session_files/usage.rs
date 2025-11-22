@@ -1,5 +1,5 @@
 use super::file::get_sessions_path;
-use super::utils::{parse_session_project_path, parse_filename_metadata};
+use super::utils::{parse_filename_metadata, parse_session_project_path};
 use chrono::{DateTime, Utc};
 use codex_protocol::protocol::TokenUsage;
 use serde::{Deserialize, Serialize};
@@ -77,9 +77,7 @@ fn write_usage_cache(cache: UsageCache) -> Result<(), String> {
     Ok(())
 }
 
-fn scan_usage_files_after(
-    last_scanned: Option<DateTime<Utc>>,
-) -> Result<Vec<Session>, String> {
+fn scan_usage_files_after(last_scanned: Option<DateTime<Utc>>) -> Result<Vec<Session>, String> {
     let sessions_dir = get_sessions_path()?;
     let mut usage_vec: Vec<Session> = Vec::new();
 
@@ -105,7 +103,10 @@ fn scan_usage_files_after(
             let file_content = read_to_string(path)
                 .map_err(|e| format!("Failed to read session file {:?}: {}", path, e))?;
 
-            let project_path = file_content.lines().next().and_then(parse_session_project_path);
+            let project_path = file_content
+                .lines()
+                .next()
+                .and_then(parse_session_project_path);
 
             let mut current_file_usage = TokenUsage::default();
 
@@ -114,16 +115,16 @@ fn scan_usage_files_after(
                     Ok(v) => v,
                     Err(_) => continue, // Skip malformed JSON lines
                 };
-            
+
                 if let Some(payload) = event.get("payload") {
                     if let Some(payload_type) = payload.get("type").and_then(|t| t.as_str()) {
                         if payload_type == "token_count" {
                             if let Some(info) = payload.get("info") {
                                 if !info.is_null() {
                                     if let Some(total_token_usage) = info.get("total_token_usage") {
-                                        if let Ok(usage) =
-                                            serde_json::from_value::<TokenUsage>(total_token_usage.clone())
-                                        {
+                                        if let Ok(usage) = serde_json::from_value::<TokenUsage>(
+                                            total_token_usage.clone(),
+                                        ) {
                                             // Only update if valid
                                             if usage.input_tokens > 0 {
                                                 current_file_usage = usage;
@@ -166,7 +167,7 @@ pub async fn read_token_usage() -> Result<Vec<Session>, String> {
     let last_scanned_dt = DateTime::parse_from_rfc3339(&usage_cache.last_scanned)
         .map_err(|e| format!("Failed to parse last_scanned timestamp: {}", e))?
         .with_timezone(&Utc);
-    
+
     println!("last_scanned_dt {:?}", last_scanned_dt);
 
     let new_usage_list = if usage_cache.sessions.is_empty() {

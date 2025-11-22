@@ -1,10 +1,10 @@
+use log::{error, info, warn};
+use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::process::Command;
 use tauri::{AppHandle, State};
-use std::path::PathBuf;
-use log::{error, info, warn};
 
-use crate::services::{codex, coder, remote};
+use crate::services::{coder, codex, remote};
 use crate::state::{RemoteAccessState, RemoteUiStatus};
 
 pub use remote::RemoteUiConfigPayload;
@@ -78,12 +78,10 @@ pub async fn delete_file(path: String) -> Result<(), String> {
 
     info!("Deleting conversation file {}", trimmed);
     let path_buf = PathBuf::from(trimmed);
-    tokio::fs::remove_file(path_buf)
-        .await
-        .map_err(|err| {
-            error!("Failed to delete file {trimmed}: {err}");
-            format!("Failed to delete file: {err}")
-        })
+    tokio::fs::remove_file(path_buf).await.map_err(|err| {
+        error!("Failed to delete file {trimmed}: {err}");
+        format!("Failed to delete file: {err}")
+    })
 }
 
 #[tauri::command]

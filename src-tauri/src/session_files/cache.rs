@@ -1,8 +1,8 @@
 use super::get::get_cache_path_for_project;
 use super::scanner::{scan_sessions_after, ScanResult};
-use chrono::{DateTime, Utc};
 use base64::engine::general_purpose;
 use base64::engine::Engine as _;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashSet;
@@ -106,8 +106,8 @@ fn write_project_cache_with_metadata(
         scan_metadata: metadata_to_write,
     };
 
-    let json_str =
-        serde_json::to_string_pretty(&data).map_err(|e| format!("Failed to serialize cache: {}", e))?;
+    let json_str = serde_json::to_string_pretty(&data)
+        .map_err(|e| format!("Failed to serialize cache: {}", e))?;
     let mut file =
         File::create(&cache_path).map_err(|e| format!("Failed to create cache file: {}", e))?;
     file.write_all(json_str.as_bytes())
@@ -118,23 +118,25 @@ fn write_project_cache_with_metadata(
 
 /// Write updated cache to disk
 #[tauri::command]
-pub fn write_project_cache(project_path: String, sessions: Vec<Value>, favorites: Vec<String>) -> Result<(), String> {
+pub fn write_project_cache(
+    project_path: String,
+    sessions: Vec<Value>,
+    favorites: Vec<String>,
+) -> Result<(), String> {
     write_project_cache_with_metadata(&project_path, sessions, favorites, None)
 }
 
 #[tauri::command]
-pub fn update_project_favorites(project_path: String, favorites: Vec<String>) -> Result<(), String> {
+pub fn update_project_favorites(
+    project_path: String,
+    favorites: Vec<String>,
+) -> Result<(), String> {
     match read_project_cache(&project_path)? {
         Some(CachedProjectData {
             sessions,
             scan_metadata,
             ..
-        }) => write_project_cache_with_metadata(
-            &project_path,
-            sessions,
-            favorites,
-            scan_metadata,
-        ),
+        }) => write_project_cache_with_metadata(&project_path, sessions, favorites, scan_metadata),
         None => write_project_cache_with_metadata(&project_path, Vec::new(), favorites, None),
     }
 }
@@ -155,12 +157,7 @@ pub fn remove_project_session(project_path: String, conversation_id: String) -> 
                     != Some(conversation_id.as_str())
             });
             favorites.retain(|id| id != &conversation_id);
-            write_project_cache_with_metadata(
-                &project_path,
-                sessions,
-                favorites,
-                scan_metadata,
-            )
+            write_project_cache_with_metadata(&project_path, sessions, favorites, scan_metadata)
         }
         None => Ok(()),
     }

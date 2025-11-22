@@ -57,7 +57,9 @@ pub fn scan_sessions_after(
                                 .map(|dt| dt.format("%Y-%m-%dT%H:%M:%S").to_string());
                             let source = serde_json::from_str::<Value>(&line)
                                 .ok()
-                                .and_then(|v| v["payload"]["source"].as_str().map(|s| s.to_string()))
+                                .and_then(|v| {
+                                    v["payload"]["source"].as_str().map(|s| s.to_string())
+                                })
                                 .unwrap_or_default();
                             sessions.push(json!({
                                 "path": file_path,
@@ -69,7 +71,10 @@ pub fn scan_sessions_after(
                         }
                     }
                 } else {
-                    eprintln!("Could not extract project path from first line of {:?}", path);
+                    eprintln!(
+                        "Could not extract project path from first line of {:?}",
+                        path
+                    );
                 }
             }
             Err(e) => eprintln!("Failed to read first line: {}", e),
@@ -88,9 +93,7 @@ pub fn scan_sessions_after(
         }
     });
 
-    Ok(ScanResult {
-        sessions,
-    })
+    Ok(ScanResult { sessions })
 }
 
 /// Scan all projects that appear in sessions folder
@@ -120,8 +123,13 @@ pub async fn scan_projects() -> Result<Vec<Value>, String> {
 
         match read_first_line(&file_path) {
             Ok(line) => match parse_session_project_path(&line) {
-                Some(cwd) => { unique_projects.insert(cwd); }
-                None => eprintln!("Could not extract project path from first line of {:?}", file_path),
+                Some(cwd) => {
+                    unique_projects.insert(cwd);
+                }
+                None => eprintln!(
+                    "Could not extract project path from first line of {:?}",
+                    file_path
+                ),
             },
             Err(e) => eprintln!("Failed to read first line for {:?}: {}", file_path, e),
         }

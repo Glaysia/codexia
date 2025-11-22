@@ -1,8 +1,10 @@
-use crate::state::AppState;
 use notify::{recommended_watcher, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, State};
+
+use crate::state::AppState;
+use crate::utils::events::emit_to_app_and_remote;
 
 #[derive(Serialize, Debug, Clone)]
 pub struct FsChangePayload {
@@ -70,7 +72,11 @@ pub async fn start_watch_directory(
                         path: p.to_string_lossy().to_string(),
                         kind: kind_to_string(&event.kind),
                     };
-                    let _ = app_for_cb.emit("fs_change", &payload);
+                    let app_for_emit = app_for_cb.clone();
+                    let payload_for_emit = payload.clone();
+                    tauri::async_runtime::spawn(async move {
+                        emit_to_app_and_remote(&app_for_emit, "fs_change", payload_for_emit).await;
+                    });
                 }
             }
         })

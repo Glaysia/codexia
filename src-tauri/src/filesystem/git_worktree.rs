@@ -1,7 +1,7 @@
 use serde::Serialize;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::fs;
 
 /// Try to locate the git repository root starting from `start_dir` (or the
 /// current process directory if None) by calling `git rev-parse --show-toplevel`.
@@ -85,11 +85,12 @@ pub struct PrepareWorktreeResult {
 }
 
 #[tauri::command]
-pub async fn prepare_git_worktree(turn_id: String, directory: Option<String>) -> Result<PrepareWorktreeResult, String> {
+pub async fn prepare_git_worktree(
+    turn_id: String,
+    directory: Option<String>,
+) -> Result<PrepareWorktreeResult, String> {
     // Resolve a starting directory if provided
-    let start_dir = directory
-        .as_deref()
-        .map(expand_tilde);
+    let start_dir = directory.as_deref().map(expand_tilde);
     let start_dir_ref = start_dir.as_deref();
 
     let git_root = match find_git_root(start_dir_ref) {
@@ -124,7 +125,12 @@ pub async fn prepare_git_worktree(turn_id: String, directory: Option<String>) ->
 
     // Add a detached worktree at current HEAD
     let status = Command::new("git")
-        .args(["worktree", "add", "--detach", worktree_path.to_string_lossy().as_ref()])
+        .args([
+            "worktree",
+            "add",
+            "--detach",
+            worktree_path.to_string_lossy().as_ref(),
+        ])
         .current_dir(&git_root)
         .status()
         .map_err(|e| format!("Failed to execute git worktree add: {}", e))?;
@@ -150,10 +156,11 @@ pub struct CommitResult {
 /// Stage all changes and commit with the provided message in the repository
 /// resolved from `directory` (or current directory if None).
 #[tauri::command]
-pub async fn git_commit_changes(message: String, directory: Option<String>) -> Result<CommitResult, String> {
-    let start_dir = directory
-        .as_deref()
-        .map(expand_tilde);
+pub async fn git_commit_changes(
+    message: String,
+    directory: Option<String>,
+) -> Result<CommitResult, String> {
+    let start_dir = directory.as_deref().map(expand_tilde);
     let start_dir_ref = start_dir.as_deref();
 
     let git_root = match find_git_root(start_dir_ref) {
@@ -210,10 +217,11 @@ pub async fn git_commit_changes(message: String, directory: Option<String>) -> R
 
 /// Apply a reverse unified diff to the repository at `directory` (or current directory).
 #[tauri::command]
-pub async fn apply_reverse_patch(unified_diff: String, directory: Option<String>) -> Result<bool, String> {
-    let start_dir = directory
-        .as_deref()
-        .map(expand_tilde);
+pub async fn apply_reverse_patch(
+    unified_diff: String,
+    directory: Option<String>,
+) -> Result<bool, String> {
+    let start_dir = directory.as_deref().map(expand_tilde);
     let start_dir_ref = start_dir.as_deref();
 
     let git_root = match find_git_root(start_dir_ref) {
@@ -250,11 +258,13 @@ pub async fn apply_reverse_patch(unified_diff: String, directory: Option<String>
 }
 
 #[tauri::command]
-pub async fn commit_changes_to_worktree(turn_id: String, message: String, directory: Option<String>) -> Result<PrepareWorktreeResult, String> {
+pub async fn commit_changes_to_worktree(
+    turn_id: String,
+    message: String,
+    directory: Option<String>,
+) -> Result<PrepareWorktreeResult, String> {
     // Resolve repository root
-    let start_dir = directory
-        .as_deref()
-        .map(expand_tilde);
+    let start_dir = directory.as_deref().map(expand_tilde);
     let start_dir_ref = start_dir.as_deref();
 
     let git_root = match find_git_root(start_dir_ref) {
@@ -278,7 +288,12 @@ pub async fn commit_changes_to_worktree(turn_id: String, message: String, direct
     // If not exists, add a detached worktree at current HEAD
     if !worktree_path.exists() {
         let status = Command::new("git")
-            .args(["worktree", "add", "--detach", worktree_path.to_string_lossy().as_ref()])
+            .args([
+                "worktree",
+                "add",
+                "--detach",
+                worktree_path.to_string_lossy().as_ref(),
+            ])
             .current_dir(&git_root)
             .status()
             .map_err(|e| format!("Failed to execute git worktree add: {}", e))?;
@@ -355,10 +370,21 @@ pub async fn commit_changes_to_worktree(turn_id: String, message: String, direct
     for rel in &untracked {
         let src = git_root.join(rel);
         let dst = worktree_path.join(rel);
-        if let Some(parent) = dst.parent() { fs::create_dir_all(parent).map_err(|e| format!("Failed to create parent dirs for {}: {}", dst.display(), e))?; }
+        if let Some(parent) = dst.parent() {
+            fs::create_dir_all(parent).map_err(|e| {
+                format!("Failed to create parent dirs for {}: {}", dst.display(), e)
+            })?;
+        }
         // Only copy regular files; skip if source is not a file
         if src.is_file() {
-            fs::copy(&src, &dst).map_err(|e| format!("Failed to copy {} -> {}: {}", src.display(), dst.display(), e))?;
+            fs::copy(&src, &dst).map_err(|e| {
+                format!(
+                    "Failed to copy {} -> {}: {}",
+                    src.display(),
+                    dst.display(),
+                    e
+                )
+            })?;
         }
     }
 
@@ -400,10 +426,11 @@ pub struct DeleteWorktreeResult {
 }
 
 #[tauri::command]
-pub async fn delete_git_worktree(turn_id: String, directory: Option<String>) -> Result<DeleteWorktreeResult, String> {
-    let start_dir = directory
-        .as_deref()
-        .map(expand_tilde);
+pub async fn delete_git_worktree(
+    turn_id: String,
+    directory: Option<String>,
+) -> Result<DeleteWorktreeResult, String> {
+    let start_dir = directory.as_deref().map(expand_tilde);
     let start_dir_ref = start_dir.as_deref();
 
     let git_root = match find_git_root(start_dir_ref) {
@@ -428,10 +455,16 @@ pub async fn delete_git_worktree(turn_id: String, directory: Option<String>) -> 
         });
     }
 
-    let remove_root = resolve_main_repo_root_for_worktree(&worktree_path).unwrap_or_else(|| git_root.clone());
+    let remove_root =
+        resolve_main_repo_root_for_worktree(&worktree_path).unwrap_or_else(|| git_root.clone());
 
     let status = Command::new("git")
-        .args(["worktree", "remove", "--force", worktree_path.to_string_lossy().as_ref()])
+        .args([
+            "worktree",
+            "remove",
+            "--force",
+            worktree_path.to_string_lossy().as_ref(),
+        ])
         .current_dir(&remove_root)
         .status()
         .map_err(|e| format!("Failed to execute git worktree remove: {}", e))?;

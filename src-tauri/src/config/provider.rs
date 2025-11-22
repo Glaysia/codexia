@@ -5,8 +5,8 @@ use std::str::FromStr;
 use tauri::command;
 use toml_edit::{Document, Item, Table};
 
-use super::{get_config_path, CodexConfig};
 use super::toml_helpers::serialize_to_table;
+use super::{get_config_path, CodexConfig};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelProvider {
@@ -26,8 +26,8 @@ pub async fn read_model_providers() -> Result<HashMap<String, ModelProvider>, St
     let content = fs::read_to_string(&config_path)
         .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-    let config: CodexConfig = toml::from_str(&content)
-        .map_err(|e| format!("Failed to parse config file: {}", e))?;
+    let config: CodexConfig =
+        toml::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?;
 
     Ok(config.model_providers)
 }
@@ -42,8 +42,7 @@ pub async fn add_or_update_model_provider(
     let mut doc = if config_path.exists() {
         let content = fs::read_to_string(&config_path)
             .map_err(|e| format!("Failed to read config file: {}", e))?;
-        Document::from_str(&content)
-            .map_err(|e| format!("Failed to parse config file: {}", e))?
+        Document::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?
     } else {
         Document::new()
     };
@@ -89,8 +88,8 @@ pub async fn delete_model_provider(provider_name: String) -> Result<(), String> 
     let content = fs::read_to_string(&config_path)
         .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-    let mut doc = Document::from_str(&content)
-        .map_err(|e| format!("Failed to parse config file: {}", e))?;
+    let mut doc =
+        Document::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?;
 
     if let Some(model_providers_table) = doc
         .as_table_mut()

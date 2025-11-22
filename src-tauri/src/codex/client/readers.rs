@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use codex_app_server_protocol::JSONRPCMessage;
 use log::{debug, error, info, warn};
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{ChildStderr, ChildStdin, ChildStdout};
 use tokio::sync::Mutex;
@@ -10,6 +10,7 @@ use tokio::sync::Mutex;
 use super::handlers::{handle_notification, handle_server_request};
 use super::transport::{notify_pending_error, notify_pending_response};
 use super::{PendingRequestMap, PendingServerRequestMap};
+use crate::utils::events::emit_to_app_and_remote;
 
 pub(super) fn spawn_stdout_reader(
     stdout: ChildStdout,
@@ -43,9 +44,7 @@ pub(super) fn spawn_stdout_reader(
                         message: inner_error.message.clone(),
                         data: inner_error.data.clone(),
                     };
-                    if let Err(err) = app_handle.emit("codex:backend-error", payload) {
-                        error!("Failed to emit codex:backend-error: {err}");
-                    }
+                    emit_to_app_and_remote(&app_handle, "codex:backend-error", payload).await;
                     notify_pending_error(&pending_requests, error).await;
                 }
                 Ok(JSONRPCMessage::Notification(notification)) => {
@@ -76,6 +75,6 @@ pub(super) fn spawn_stderr_reader(stderr: ChildStderr, app_handle: AppHandle) {
             }
         }
         info!("codex app-server stderr closed; process exited");
-        let _ = app_handle.emit("codex:process-exited", ());
+        emit_to_app_and_remote(&app_handle, "codex:process-exited", ()).await;
     });
 }

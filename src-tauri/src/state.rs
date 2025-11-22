@@ -1,11 +1,10 @@
-
+use log::info;
 use notify::RecommendedWatcher;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
-use log::info;
 use tauri::{AppHandle, State};
+use tokio::sync::{Mutex, RwLock};
 
 use crate::codex::CodexAppServerClient;
 

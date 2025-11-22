@@ -5,8 +5,8 @@ use std::str::FromStr;
 use tauri::command;
 use toml_edit::{Document, Item, Table};
 
-use super::{get_config_path, CodexConfig};
 use super::toml_helpers::serialize_to_table;
+use super::{get_config_path, CodexConfig};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectConfig {
@@ -30,8 +30,8 @@ pub async fn read_codex_config() -> Result<Vec<Project>, String> {
     let content = fs::read_to_string(&config_path)
         .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-    let config: CodexConfig = toml::from_str(&content)
-        .map_err(|e| format!("Failed to parse config file: {}", e))?;
+    let config: CodexConfig =
+        toml::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?;
 
     let projects: Vec<Project> = config
         .projects
@@ -61,15 +61,12 @@ pub async fn set_project_trust(path: String, trust_level: String) -> Result<(), 
     let mut doc = if config_path.exists() {
         let content = fs::read_to_string(&config_path)
             .map_err(|e| format!("Failed to read config file: {}", e))?;
-        Document::from_str(&content)
-            .map_err(|e| format!("Failed to parse config file: {}", e))?
+        Document::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?
     } else {
         Document::new()
     };
 
-    let projects_entry = doc
-        .entry("projects")
-        .or_insert(Item::Table(Table::new()));
+    let projects_entry = doc.entry("projects").or_insert(Item::Table(Table::new()));
 
     let projects_table = match projects_entry.as_table_mut() {
         Some(table) => table,

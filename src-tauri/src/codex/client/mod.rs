@@ -4,33 +4,14 @@ use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::Arc;
 
 use codex_app_server_protocol::{
-    AddConversationListenerParams,
-    AddConversationSubscriptionResponse,
-    CancelLoginAccountParams,
-    CancelLoginAccountResponse,
-    ClientInfo,
-    GetAccountParams,
-    GetAccountRateLimitsResponse,
-    GetAccountResponse,
-    InitializeParams,
-    InterruptConversationParams,
-    InterruptConversationResponse,
-    JSONRPCErrorError,
-    JSONRPCNotification,
-    JSONRPCRequest,
-    LoginAccountParams,
-    LoginAccountResponse,
-    LogoutAccountResponse,
-    NewConversationParams,
-    NewConversationResponse,
-    RemoveConversationListenerParams,
-    RemoveConversationSubscriptionResponse,
-    RequestId,
-    ResumeConversationParams,
-    ResumeConversationResponse,
-    SendUserMessageParams,
-    SendUserMessageResponse,
-    TurnStartParams,
+    AddConversationListenerParams, AddConversationSubscriptionResponse, CancelLoginAccountParams,
+    CancelLoginAccountResponse, ClientInfo, GetAccountParams, GetAccountRateLimitsResponse,
+    GetAccountResponse, InitializeParams, InterruptConversationParams,
+    InterruptConversationResponse, JSONRPCErrorError, JSONRPCNotification, JSONRPCRequest,
+    LoginAccountParams, LoginAccountResponse, LogoutAccountResponse, NewConversationParams,
+    NewConversationResponse, RemoveConversationListenerParams,
+    RemoveConversationSubscriptionResponse, RequestId, ResumeConversationParams,
+    ResumeConversationResponse, SendUserMessageParams, SendUserMessageResponse, TurnStartParams,
     TurnStartResponse,
 };
 use codex_protocol::protocol::ReviewDecision;
@@ -40,8 +21,8 @@ use tauri::AppHandle;
 use tokio::process::{Child, ChildStdin, Command};
 use tokio::sync::{oneshot, Mutex};
 
-use crate::utils::codex_discovery::discover_codex_command;
 use crate::utils::coder_discovery::discover_coder_command;
+use crate::utils::codex_discovery::discover_codex_command;
 
 mod handlers;
 mod readers;
@@ -90,14 +71,16 @@ impl CodexAppServerClient {
         let (binary_path, label) = if normalized == "coder" {
             (
                 discover_coder_command().ok_or_else(|| {
-                    "Unable to locate coder binary. Install Coder CLI or set CODER_PATH.".to_string()
+                    "Unable to locate coder binary. Install Coder CLI or set CODER_PATH."
+                        .to_string()
                 })?,
                 "coder",
             )
         } else {
             (
                 discover_codex_command().ok_or_else(|| {
-                    "Unable to locate codex binary. Install Codex CLI or set CODEX_PATH.".to_string()
+                    "Unable to locate codex binary. Install Codex CLI or set CODEX_PATH."
+                        .to_string()
                 })?,
                 "codex",
             )
@@ -182,7 +165,8 @@ impl CodexAppServerClient {
         params: LoginAccountParams,
     ) -> Result<LoginAccountResponse, String> {
         let params_value = serde_json::to_value(params).map_err(|err| err.to_string())?;
-        self.request("account/login/start", Some(params_value)).await
+        self.request("account/login/start", Some(params_value))
+            .await
     }
 
     pub async fn cancel_login_account(
@@ -191,7 +175,8 @@ impl CodexAppServerClient {
     ) -> Result<CancelLoginAccountResponse, String> {
         let params = CancelLoginAccountParams { login_id };
         let params_value = serde_json::to_value(params).map_err(|err| err.to_string())?;
-        self.request("account/login/cancel", Some(params_value)).await
+        self.request("account/login/cancel", Some(params_value))
+            .await
     }
 
     pub async fn logout_account(&self) -> Result<LogoutAccountResponse, String> {
@@ -260,10 +245,7 @@ impl CodexAppServerClient {
         self.request("sendUserMessage", Some(params_value)).await
     }
 
-    pub async fn turn_start(
-        &self,
-        params: TurnStartParams,
-    ) -> Result<TurnStartResponse, String> {
+    pub async fn turn_start(&self, params: TurnStartParams) -> Result<TurnStartResponse, String> {
         let params_value = serde_json::to_value(params).map_err(|err| err.to_string())?;
         self.request("turn/start", Some(params_value)).await
     }

@@ -5,8 +5,8 @@ use std::str::FromStr;
 use tauri::command;
 use toml_edit::{value, Document, Item, Table, Value};
 
-use crate::config::{get_config_path, CodexConfig};
 use crate::config::toml_helpers::serialize_to_table;
+use crate::config::{get_config_path, CodexConfig};
 
 fn default_enabled() -> bool {
     true
@@ -161,8 +161,7 @@ pub async fn add_mcp_server(name: String, config: McpServerConfig) -> Result<(),
     let mut doc = if config_path.exists() {
         let content = fs::read_to_string(&config_path)
             .map_err(|e| format!("Failed to read config file: {}", e))?;
-        Document::from_str(&content)
-            .map_err(|e| format!("Failed to parse config file: {}", e))?
+        Document::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?
     } else {
         Document::new()
     };
@@ -209,8 +208,8 @@ pub async fn delete_mcp_server(name: String) -> Result<(), String> {
     let content = fs::read_to_string(&config_path)
         .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-    let mut doc = Document::from_str(&content)
-        .map_err(|e| format!("Failed to parse config file: {}", e))?;
+    let mut doc =
+        Document::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?;
 
     let mcp_servers_entry = doc
         .entry("mcp_servers")
@@ -246,8 +245,8 @@ pub async fn set_mcp_server_enabled(name: String, enabled: bool) -> Result<(), S
     let content = fs::read_to_string(&config_path)
         .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-    let mut doc = Document::from_str(&content)
-        .map_err(|e| format!("Failed to parse config file: {}", e))?;
+    let mut doc =
+        Document::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?;
 
     let mcp_servers_entry = doc
         .entry("mcp_servers")
