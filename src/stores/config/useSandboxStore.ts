@@ -13,8 +13,8 @@ interface SandboxState {
 export const useSandboxStore = create<SandboxState>()(
   persist(
     (set) => ({
-      mode: "chat", // Default mode
-      approvalPolicy: SANDBOX_MODES.chat.defaultApprovalPolicy, // Default approval policy
+      mode: "agent-full", // Default mode
+      approvalPolicy: SANDBOX_MODES["agent-full"].defaultApprovalPolicy, // Default approval policy
       setMode: (mode) =>
         set(() => ({
           mode,
