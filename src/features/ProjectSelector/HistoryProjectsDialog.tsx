@@ -20,6 +20,12 @@ import { useLayoutStore } from '@/stores/useLayoutStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getFilename } from '@/utils/getFilename';
 
+// AIPD embeds the web UI with an ``addProject`` query parameter.  Keep the
+// first-run picker closed from the first render; the parent app will register
+// that project immediately after the web UI starts.
+const launchedByAipd =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('addProject');
+
 export function HistoryProjectsDialog() {
   const { projects, historyProjects, setCwd, addProject, selectedAgent, setSelectedAgent } =
     useWorkspaceStore();
@@ -42,6 +48,10 @@ export function HistoryProjectsDialog() {
   );
 
   useEffect(() => {
+    if (launchedByAipd) {
+      setOpen(false);
+      return;
+    }
     if (projects.length === 0) {
       setOpen(true);
       return;
